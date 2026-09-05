@@ -321,6 +321,57 @@ namespace
     }
 
     //==============================================================================
+    // Editor lifetime stress: open/close many times, switch skins through the real
+    // async path, and destroy editors while a switch is still pending.
+    void stressEditorLifetime()
+    {
+        std::cout << "\n[editor lifetime]" << std::endl;
+
+        auto pump = [] (int ms) { juce::MessageManager::getInstance()->runDispatchLoopUntil (ms); };
+        auto skinOf = [] (juce::AudioProcessorEditor& editor) { return dynamic_cast<SkinView*> (editor.getChildComponent (0)); };
+
+        bool allGood = true;
+        SimpletonAudioProcessor p;
+        p.prepareToPlay (48000.0, 512);
+
+        for (int cycle = 0; cycle < 30; ++cycle)
+        {
+            std::unique_ptr<juce::AudioProcessorEditor> editor (p.createEditor());
+            auto* skin = skinOf (*editor);
+            allGood = allGood && skin != nullptr;
+            if (skin == nullptr) break;
+
+            const auto before = editor->getBounds();
+            skin->onSelectSkin (Skins::other (skin->currentSkin));   // same call the popup menu makes
+            pump (30);                                                // lets the deferred swap run
+
+            auto* swapped = skinOf (*editor);
+            allGood = allGood && swapped != nullptr && swapped != skin
+                      && editor->getBounds() != before
+                      && Skins::load (p.getState()) == swapped->currentSkin;
+
+            // Now request another swap and kill the editor before it runs.
+            swapped->onSelectSkin (Skins::other (swapped->currentSkin));
+            editor.reset();
+            pump (30);
+        }
+
+        check (allGood, "30 open/switch/close cycles, including destroy-while-switch-pending");
+
+        // Editors of two instances alive at once, then torn down in either order.
+        {
+            SimpletonAudioProcessor a, b;
+            std::unique_ptr<juce::AudioProcessorEditor> ea (a.createEditor()), eb (b.createEditor());
+            skinOf (*ea)->onSelectSkin (SkinId::flex);
+            pump (30);
+            ea.reset();
+            eb.reset();
+            pump (30);
+            check (true, "two editors alive at once, torn down cleanly");
+        }
+    }
+
+    //==============================================================================
     void renderEditor (const juce::File& outDir)
     {
         std::cout << "\n[editor snapshots] -> " << outDir.getFullPathName() << std::endl;
@@ -407,6 +458,7 @@ int main (int argc, char* argv[])
     }
    #endif
 
+    stressEditorLifetime();
     renderEditor (outDir);
 
     std::cout << "\n" << (failures == 0 ? "ALL CHECKS PASSED" : juce::String (failures) + " CHECK(S) FAILED") << std::endl;

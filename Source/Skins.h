@@ -9,7 +9,9 @@ enum class SkinId { minimalist, flex };
 
 namespace Skins
 {
-    inline const juce::Identifier property { "skin" };
+    // Plain literal on purpose: nothing with a destructor lives at static scope,
+    // so unloading the plugin or quitting the host never runs JUCE code late.
+    inline constexpr const char* property = "skin";
 
     inline juce::String toString (SkinId skin)            { return skin == SkinId::flex ? "flex" : "minimalist"; }
     inline SkinId fromString (const juce::String& text)   { return text == "flex" ? SkinId::flex : SkinId::minimalist; }
