@@ -66,7 +66,7 @@ Building on a Windows machine by hand works too:
 
 ```bat
 git clone --depth 1 --branch 8.0.15 https://github.com/juce-framework/JUCE libs\JUCE
-cmake -B build -G "Visual Studio 17 2022" -A x64
+cmake -B build -A x64
 cmake --build build --config Release --target Simpleton_VST3
 ```
 

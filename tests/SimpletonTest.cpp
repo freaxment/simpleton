@@ -258,7 +258,17 @@ namespace
         std::cout << "\n[hosted " << format.getName() << "] " << bundle.getFullPathName() << std::endl;
 
         juce::OwnedArray<juce::PluginDescription> descriptions;
-        format.findAllTypesForFile (descriptions, bundle.getFullPathName());
+
+        // A freshly installed AU can take a moment to show up in the system's
+        // component registry, so give the scan a few tries.
+        for (int attempt = 0; attempt < 10 && descriptions.isEmpty(); ++attempt)
+        {
+            if (attempt > 0)
+                juce::Thread::sleep (1000);
+
+            format.findAllTypesForFile (descriptions, bundle.getFullPathName());
+        }
+
         check (descriptions.size() == 1, "bundle describes exactly one plugin (" + juce::String (descriptions.size()) + ")");
 
         if (descriptions.isEmpty())

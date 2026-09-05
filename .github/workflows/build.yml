@@ -23,10 +23,11 @@ jobs:
         run: cmake -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DSIMPLETON_BUILD_TESTS=ON
       - name: Build
         run: cmake --build build
-      - name: Self-test host + auval
+      - name: auval + self-test host
         run: |
-          ./build/SimpletonTest_artefacts/Release/SimpletonTest snapshots
+          killall -9 AudioComponentRegistrar 2>/dev/null || true
           auval -v aufx Smpl Frxm
+          ./build/SimpletonTest_artefacts/Release/SimpletonTest snapshots
       - name: Pack bundles (keeps permissions)
         run: tar -czf macOS.tar.gz -C build/Simpleton_artefacts/Release VST3/Simpleton.vst3 AU/Simpleton.component
       - uses: actions/upload-artifact@v4
@@ -46,7 +47,7 @@ jobs:
       - name: Fetch JUCE
         run: git clone --depth 1 --branch $env:JUCE_TAG https://github.com/juce-framework/JUCE libs/JUCE
       - name: Configure
-        run: cmake -B build -G "Visual Studio 17 2022" -A x64
+        run: cmake -B build -A x64
       - name: Build
         run: cmake --build build --config Release --target Simpleton_VST3
       - name: Validate with pluginval
