@@ -6,6 +6,9 @@ on:
     tags: ['v*']
   workflow_dispatch:
 
+permissions:
+  contents: write   # needed to attach the archive to a GitHub Release
+
 env:
   JUCE_TAG: 8.0.15
 
