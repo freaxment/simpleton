@@ -83,7 +83,7 @@ void FlexSkin::Button::paintButton (juce::Graphics& g, bool over, bool)
 }
 
 //==============================================================================
-FlexSkin::FlexSkin (SimpletonAudioProcessor& p)
+FlexSkin::FlexSkin (FreaxVolumeAudioProcessor& p)
     : processor (p)
 {
     logo = juce::Drawable::createFromImageData (BinaryData::freaxment_logo_svg, BinaryData::freaxment_logo_svgSize);
@@ -152,7 +152,7 @@ void FlexSkin::paint (juce::Graphics& g)
     // Title
     g.setFont (juce::FontOptions (30.0f, juce::Font::bold));
     g.setColour (juce::Colours::white);
-    g.drawText ("SIMPLETON", 29, 23, 260, 36, juce::Justification::left);
+    g.drawText ("FREAXVOLUME", 29, 23, 260, 36, juce::Justification::left);
 
     g.setColour (soft);
     g.setFont (juce::FontOptions (11.0f));

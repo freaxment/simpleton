@@ -18,7 +18,7 @@ namespace
     }
 }
 
-MinimalistSkin::MinimalistSkin (SimpletonAudioProcessor& p)
+MinimalistSkin::MinimalistSkin (FreaxVolumeAudioProcessor& p)
     : processor (p)
 {
     logo = juce::Drawable::createFromImageData (BinaryData::freaxment_logo_svg, BinaryData::freaxment_logo_svgSize);
@@ -115,10 +115,10 @@ void MinimalistSkin::paint (juce::Graphics& g)
                                              Palette::paper.darker (0.03f), 0.0f, (float) getHeight(), false));
     g.fillAll();
 
-    // Title: "simpleton" + Freaxment logo, centred as one group
+    // Title: "freaxvolume" + Freaxment logo, centred as one group
     {
         const auto titleFont  = makeFont (scale * 24.0f, true);
-        const juce::String titleText ("simpleton");
+        const juce::String titleText ("freaxvolume");
         const float textWidth = juce::GlyphArrangement::getStringWidth (titleFont, titleText);
         const float gap       = scale * 12.0f;
 

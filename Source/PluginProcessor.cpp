@@ -65,11 +65,11 @@ namespace
     }
 }
 
-SimpletonAudioProcessor::SimpletonAudioProcessor()
+FreaxVolumeAudioProcessor::FreaxVolumeAudioProcessor()
     : AudioProcessor (BusesProperties()
                           .withInput  ("Input",  juce::AudioChannelSet::stereo(), true)
                           .withOutput ("Output", juce::AudioChannelSet::stereo(), true)),
-      state (*this, nullptr, "Simpleton", createParameterLayout())
+      state (*this, nullptr, "FreaxVolume", createParameterLayout())
 {
     volumeParam = state.getRawParameterValue (ParamID::volume);
     widthParam  = state.getRawParameterValue (ParamID::width);
@@ -77,7 +77,7 @@ SimpletonAudioProcessor::SimpletonAudioProcessor()
     monoParam   = state.getRawParameterValue (ParamID::mono);
 }
 
-juce::AudioProcessorValueTreeState::ParameterLayout SimpletonAudioProcessor::createParameterLayout()
+juce::AudioProcessorValueTreeState::ParameterLayout FreaxVolumeAudioProcessor::createParameterLayout()
 {
     juce::AudioProcessorValueTreeState::ParameterLayout layout;
 
@@ -110,7 +110,7 @@ juce::AudioProcessorValueTreeState::ParameterLayout SimpletonAudioProcessor::cre
     return layout;
 }
 
-void SimpletonAudioProcessor::prepareToPlay (double sampleRate, int)
+void FreaxVolumeAudioProcessor::prepareToPlay (double sampleRate, int)
 {
     gainSmoother.reset (sampleRate, smoothingSeconds);
     sideSmoother.reset (sampleRate, smoothingSeconds);
@@ -122,7 +122,7 @@ void SimpletonAudioProcessor::prepareToPlay (double sampleRate, int)
     sideSmoother.setCurrentAndTargetValue (mono ? 0.0f : Mapping::widthToSideGain (*widthParam));
 }
 
-bool SimpletonAudioProcessor::isBusesLayoutSupported (const BusesLayout& layouts) const
+bool FreaxVolumeAudioProcessor::isBusesLayoutSupported (const BusesLayout& layouts) const
 {
     const auto& in  = layouts.getMainInputChannelSet();
     const auto& out = layouts.getMainOutputChannelSet();
@@ -133,7 +133,7 @@ bool SimpletonAudioProcessor::isBusesLayoutSupported (const BusesLayout& layouts
     return in == juce::AudioChannelSet::mono() || in == juce::AudioChannelSet::stereo();
 }
 
-void SimpletonAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce::MidiBuffer&)
+void FreaxVolumeAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce::MidiBuffer&)
 {
     juce::ScopedNoDenormals noDenormals;
 
@@ -183,25 +183,38 @@ void SimpletonAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, ju
     }
 }
 
-juce::AudioProcessorEditor* SimpletonAudioProcessor::createEditor()
+juce::AudioProcessorEditor* FreaxVolumeAudioProcessor::createEditor()
 {
-    return new SimpletonAudioProcessorEditor (*this);
+    return new FreaxVolumeAudioProcessorEditor (*this);
 }
 
-void SimpletonAudioProcessor::getStateInformation (juce::MemoryBlock& destData)
+void FreaxVolumeAudioProcessor::getStateInformation (juce::MemoryBlock& destData)
 {
     if (auto xml = state.copyState().createXml())
         copyXmlToBinary (*xml, destData);
 }
 
-void SimpletonAudioProcessor::setStateInformation (const void* data, int sizeInBytes)
+void FreaxVolumeAudioProcessor::setStateInformation (const void* data, int sizeInBytes)
 {
-    if (auto xml = getXmlFromBinary (data, sizeInBytes))
-        if (xml->hasTagName (state.state.getType()))
-            state.replaceState (juce::ValueTree::fromXml (*xml));
+    auto xml = getXmlFromBinary (data, sizeInBytes);
+
+    if (xml == nullptr)
+        return;
+
+    if (xml->hasTagName (state.state.getType()))
+    {
+        state.replaceState (juce::ValueTree::fromXml (*xml));
+    }
+    else if (xml->hasTagName ("Simpleton"))   // projects saved before the plugin was renamed
+    {
+        auto legacy = juce::ValueTree::fromXml (*xml);
+        juce::ValueTree converted (state.state.getType());
+        converted.copyPropertiesAndChildrenFrom (legacy, nullptr);
+        state.replaceState (converted);
+    }
 }
 
 juce::AudioProcessor* JUCE_CALLTYPE createPluginFilter()
 {
-    return new SimpletonAudioProcessor();
+    return new FreaxVolumeAudioProcessor();
 }

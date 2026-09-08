@@ -5,20 +5,20 @@
 #include "Skins.h"
 
 // Thin host window: shows whichever skin is selected and swaps it on request.
-class SimpletonAudioProcessorEditor final : public juce::AudioProcessorEditor
+class FreaxVolumeAudioProcessorEditor final : public juce::AudioProcessorEditor
 {
 public:
-    explicit SimpletonAudioProcessorEditor (SimpletonAudioProcessor&);
-    ~SimpletonAudioProcessorEditor() override;
+    explicit FreaxVolumeAudioProcessorEditor (FreaxVolumeAudioProcessor&);
+    ~FreaxVolumeAudioProcessorEditor() override;
 
     void resized() override;
 
 private:
     void showSkin (SkinId);
 
-    SimpletonAudioProcessor& simpletonProcessor;
-    SimpletonLookAndFeel lookAndFeel;
+    FreaxVolumeAudioProcessor& freaxvolumeProcessor;
+    FreaxVolumeLookAndFeel lookAndFeel;
     std::unique_ptr<SkinView> skin;
 
-    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (SimpletonAudioProcessorEditor)
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (FreaxVolumeAudioProcessorEditor)
 };

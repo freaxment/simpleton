@@ -2,34 +2,34 @@
 #include "MinimalistSkin.h"
 #include "FlexSkin.h"
 
-SimpletonAudioProcessorEditor::SimpletonAudioProcessorEditor (SimpletonAudioProcessor& p)
-    : AudioProcessorEditor (&p), simpletonProcessor (p)
+FreaxVolumeAudioProcessorEditor::FreaxVolumeAudioProcessorEditor (FreaxVolumeAudioProcessor& p)
+    : AudioProcessorEditor (&p), freaxvolumeProcessor (p)
 {
     setLookAndFeel (&lookAndFeel);
     setResizable (true, true);
-    showSkin (Skins::load (simpletonProcessor.getState()));
+    showSkin (Skins::load (freaxvolumeProcessor.getState()));
 }
 
-SimpletonAudioProcessorEditor::~SimpletonAudioProcessorEditor()
+FreaxVolumeAudioProcessorEditor::~FreaxVolumeAudioProcessorEditor()
 {
     skin.reset();
     setLookAndFeel (nullptr);
 }
 
-void SimpletonAudioProcessorEditor::showSkin (SkinId id)
+void FreaxVolumeAudioProcessorEditor::showSkin (SkinId id)
 {
     skin.reset();
 
     if (id == SkinId::flex)
-        skin = std::make_unique<FlexSkin> (simpletonProcessor);
+        skin = std::make_unique<FlexSkin> (freaxvolumeProcessor);
     else
-        skin = std::make_unique<MinimalistSkin> (simpletonProcessor);
+        skin = std::make_unique<MinimalistSkin> (freaxvolumeProcessor);
 
     skin->currentSkin = id;
 
     // The choice comes from a menu opened by the skin itself, so the swap is
     // deferred until that call has fully finished before the skin is destroyed.
-    skin->onSelectSkin = [safeThis = juce::Component::SafePointer<SimpletonAudioProcessorEditor> (this), id] (SkinId next)
+    skin->onSelectSkin = [safeThis = juce::Component::SafePointer<FreaxVolumeAudioProcessorEditor> (this), id] (SkinId next)
     {
         if (next == id)
             return;
@@ -39,7 +39,7 @@ void SimpletonAudioProcessorEditor::showSkin (SkinId id)
             if (safeThis == nullptr)
                 return;
 
-            Skins::save (safeThis->simpletonProcessor.getState(), next);
+            Skins::save (safeThis->freaxvolumeProcessor.getState(), next);
             safeThis->showSkin (next);
         });
     };
@@ -57,7 +57,7 @@ void SimpletonAudioProcessorEditor::showSkin (SkinId id)
         setSize (size.x, size.y);
 }
 
-void SimpletonAudioProcessorEditor::resized()
+void FreaxVolumeAudioProcessorEditor::resized()
 {
     if (skin != nullptr)
         skin->setBounds (getLocalBounds());

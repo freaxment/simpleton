@@ -1,4 +1,4 @@
-# Simpleton — by Freaxment
+# FreaxVolume — by Freaxment
 
 A tiny channel utility for macOS in the spirit of Fruity Balance, Ableton Utility
 and Bitwig Tool. VST3 + AU, universal binary (Apple Silicon + Intel).
@@ -9,7 +9,7 @@ the skin from the menu; the choice is saved with the project.
 
 ```
 ┌──────────────────────────────┐
-│    simpleton  by Freaxment   │
+│    freaxvolume  by Freaxment   │
 │   VOLUME            WIDTH    │
 │    (o)               (o)     │
 │   0.0 dB           100 %     │
@@ -44,8 +44,8 @@ The repo pulls JUCE 8.0.15 into `libs/JUCE` on first build.
 ./build.sh
 ```
 
-Output is copied to `~/Library/Audio/Plug-Ins/VST3/Simpleton.vst3` and
-`~/Library/Audio/Plug-Ins/Components/Simpleton.component`. Rescan plugins in your DAW.
+Output is copied to `~/Library/Audio/Plug-Ins/VST3/FreaxVolume.vst3` and
+`~/Library/Audio/Plug-Ins/Components/FreaxVolume.component`. Rescan plugins in your DAW.
 
 If CMake/Ninja are missing and you don't use Homebrew:
 
@@ -58,7 +58,7 @@ uv tool install cmake && uv tool install ninja
 Windows needs MSVC, so the Windows VST3 is built by GitHub Actions
 (`.github/workflows/build.yml`). Every push to `main` builds macOS (VST3 + AU,
 self-test + auval) and Windows (VST3, validated with pluginval) and uploads
-`Simpleton-by-Freaxment-v<version>-macOS-Windows.zip` as a workflow artifact.
+`FreaxVolume-by-Freaxment-v<version>-macOS-Windows.zip` as a workflow artifact.
 Pushing a tag such as `v1.1.1` also attaches the archive to a GitHub Release.
 `packaging/INSTALL.txt` is the note shipped inside the archive.
 
@@ -67,15 +67,15 @@ Building on a Windows machine by hand works too:
 ```bat
 git clone --depth 1 --branch 8.0.15 https://github.com/juce-framework/JUCE libs\JUCE
 cmake -B build -A x64
-cmake --build build --config Release --target Simpleton_VST3
+cmake --build build --config Release --target FreaxVolume_VST3
 ```
 
 ## Self-test
 
 ```bash
-cmake -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DSIMPLETON_BUILD_TESTS=ON
+cmake -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DFREAXVOLUME_BUILD_TESTS=ON
 cmake --build build
-./build/SimpletonTest_artefacts/Release/SimpletonTest snapshots
+./build/FreaxVolumeTest_artefacts/Release/FreaxVolumeTest snapshots
 ```
 
 Checks the knob laws numerically, smoothing, parameter text, state round-trip,
@@ -87,9 +87,9 @@ Apple's own validator also passes: `auval -v aufx Smpl Frxm`.
 
 | | |
 |---|---|
-| Product | Simpleton |
+| Product | FreaxVolume |
 | Manufacturer | Freaxment |
-| Bundle ID | com.freaxment.simpleton |
+| Bundle ID | com.freaxment.freaxvolume |
 | Manufacturer code / plugin code | `Frxm` / `Smpl` |
 
 ## Layout
@@ -104,12 +104,12 @@ Source/MinimalistSkin.*    Minimalist skin (layout + drawing via LookAndFeel.h)
 Source/FlexSkin.*          Flex skin (self-painted knobs and buttons)
 Source/LookAndFeel.h       Minimalist palette, knob / button / text-editor drawing
 Resources/freaxment_logo.svg  logo, embedded as binary data
-tests/SimpletonTest.cpp    self-test host
+tests/FreaxVolumeTest.cpp    self-test host
 libs/JUCE                  JUCE 8.0.15 (cloned, not committed)
 ```
 
 ## License
 
-JUCE 8 is used under its dual license. Distributing Simpleton binaries publicly
+JUCE 8 is used under its dual license. Distributing FreaxVolume binaries publicly
 either requires a JUCE license that matches your revenue tier or releasing this
 source under GPLv3, as JUCE's terms require.

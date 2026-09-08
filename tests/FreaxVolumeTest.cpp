@@ -1,4 +1,4 @@
-// Self-test host for Simpleton.
+// Self-test host for FreaxVolume.
 //   1. Instantiates the processor directly and checks the knob laws, smoothing,
 //      parameter text, state round-trip and the mono bus layout.
 //   2. Loads the installed VST3 and AU bundles through JUCE's plugin hosting
@@ -92,7 +92,7 @@ namespace
     {
         std::cout << "\n[direct instance]" << std::endl;
 
-        SimpletonAudioProcessor p;
+        FreaxVolumeAudioProcessor p;
         p.setRateAndBufferSizeDetails (48000.0, 512);
         p.prepareToPlay (48000.0, 512);
 
@@ -205,7 +205,7 @@ namespace
         juce::MemoryBlock blob;
         p.getStateInformation (blob);
 
-        SimpletonAudioProcessor q;
+        FreaxVolumeAudioProcessor q;
         q.setStateInformation (blob.getData(), (int) blob.getSize());
         check (Skins::load (q.getState()) == SkinId::minimalist, "default skin is Minimalist");
 
@@ -213,6 +213,24 @@ namespace
         p.getStateInformation (blob);
         q.setStateInformation (blob.getData(), (int) blob.getSize());
         check (Skins::load (q.getState()) == SkinId::flex, "skin choice survives save/restore");
+
+        // A state saved by the plugin while it was still called "Simpleton" must load too.
+        {
+            juce::XmlElement legacy ("Simpleton");
+            legacy.setAttribute ("skin", "flex");
+            auto* param = legacy.createNewChildElement ("PARAM");
+            param->setAttribute ("id", "width");
+            param->setAttribute ("value", 250.0);
+            juce::MemoryBlock legacyBlob;
+            FreaxVolumeAudioProcessor::copyXmlToBinary (legacy, legacyBlob);
+
+            FreaxVolumeAudioProcessor r;
+            r.setStateInformation (legacyBlob.getData(), (int) legacyBlob.getSize());
+            auto* widthParam = findParam (r, ParamID::width);
+            const float restoredWidth = widthParam->convertFrom0to1 (widthParam->getValue());
+            check (near (restoredWidth, 250.0f) && Skins::load (r.getState()) == SkinId::flex,
+                   "legacy 'Simpleton' state loads (width 250 %, Flex skin)");
+        }
 
         auto plain = [] (juce::AudioProcessor& proc, const char* id)
         {
@@ -225,7 +243,7 @@ namespace
                "state save/restore round-trip");
 
         // Mono bus layout.
-        SimpletonAudioProcessor m;
+        FreaxVolumeAudioProcessor m;
         juce::AudioProcessor::BusesLayout monoLayout;
         monoLayout.inputBuses.add (juce::AudioChannelSet::mono());
         monoLayout.outputBuses.add (juce::AudioChannelSet::mono());
@@ -275,7 +293,7 @@ namespace
             return;
 
         const auto& desc = *descriptions[0];
-        check (desc.name == "Simpleton",              "name: " + desc.name);
+        check (desc.name == "FreaxVolume",              "name: " + desc.name);
         check (desc.manufacturerName == "Freaxment",  "manufacturer: " + desc.manufacturerName);
         check (! desc.isInstrument,                   "category: " + desc.category + " (effect)");
         std::cout << "        version " << desc.version << ", id " << desc.fileOrIdentifier << std::endl;
@@ -331,7 +349,7 @@ namespace
         auto skinOf = [] (juce::AudioProcessorEditor& editor) { return dynamic_cast<SkinView*> (editor.getChildComponent (0)); };
 
         bool allGood = true;
-        SimpletonAudioProcessor p;
+        FreaxVolumeAudioProcessor p;
         p.prepareToPlay (48000.0, 512);
 
         for (int cycle = 0; cycle < 30; ++cycle)
@@ -360,7 +378,7 @@ namespace
 
         // Editors of two instances alive at once, then torn down in either order.
         {
-            SimpletonAudioProcessor a, b;
+            FreaxVolumeAudioProcessor a, b;
             std::unique_ptr<juce::AudioProcessorEditor> ea (a.createEditor()), eb (b.createEditor());
             skinOf (*ea)->onSelectSkin (SkinId::flex);
             pump (30);
@@ -377,7 +395,7 @@ namespace
         std::cout << "\n[editor snapshots] -> " << outDir.getFullPathName() << std::endl;
         outDir.createDirectory();
 
-        auto snapshot = [&] (SimpletonAudioProcessor& p, const juce::String& fileName, float scaleFactor)
+        auto snapshot = [&] (FreaxVolumeAudioProcessor& p, const juce::String& fileName, float scaleFactor)
         {
             std::unique_ptr<juce::AudioProcessorEditor> editor (p.createEditor());
             check (editor != nullptr, "editor created");
@@ -395,39 +413,39 @@ namespace
                    + " (" + juce::String (image.getWidth()) + "x" + juce::String (image.getHeight()) + ")");
         };
 
-        SimpletonAudioProcessor a;
-        snapshot (a, "simpleton_default.png", 1.0f);
+        FreaxVolumeAudioProcessor a;
+        snapshot (a, "freaxvolume_default.png", 1.0f);
 
-        SimpletonAudioProcessor b;
+        FreaxVolumeAudioProcessor b;
         setPlain (b, ParamID::volume, 82.0f);
         setPlain (b, ParamID::width, 240.0f);
-        snapshot (b, "simpleton_above_middle.png", 1.0f);
+        snapshot (b, "freaxvolume_above_middle.png", 1.0f);
 
-        SimpletonAudioProcessor d;
+        FreaxVolumeAudioProcessor d;
         setPlain (d, ParamID::volume, 30.0f);
         setPlain (d, ParamID::width, 40.0f);
         setPlain (d, ParamID::mono, 1.0f);
-        snapshot (d, "simpleton_below_middle_mono.png", 1.0f);
+        snapshot (d, "freaxvolume_below_middle_mono.png", 1.0f);
 
-        SimpletonAudioProcessor c;
+        FreaxVolumeAudioProcessor c;
         setPlain (c, ParamID::volume, 18.0f);
         setPlain (c, ParamID::width, 300.0f);
         setPlain (c, ParamID::mute, 1.0f);
-        snapshot (c, "simpleton_mute_wide_large.png", 1.5f);
+        snapshot (c, "freaxvolume_mute_wide_large.png", 1.5f);
 
         // Flex skin
-        SimpletonAudioProcessor e;
+        FreaxVolumeAudioProcessor e;
         Skins::save (e.getState(), SkinId::flex);
         snapshot (e, "flex_default.png", 1.0f);
 
-        SimpletonAudioProcessor f;
+        FreaxVolumeAudioProcessor f;
         Skins::save (f.getState(), SkinId::flex);
         setPlain (f, ParamID::volume, 80.0f);
         setPlain (f, ParamID::width, 50.0f);
         setPlain (f, ParamID::mono, 1.0f);
         snapshot (f, "flex_80_50_mono.png", 1.0f);
 
-        SimpletonAudioProcessor h;
+        FreaxVolumeAudioProcessor h;
         Skins::save (h.getState(), SkinId::flex);
         setPlain (h, ParamID::volume, 0.0f);
         setPlain (h, ParamID::width, 300.0f);
@@ -449,12 +467,12 @@ int main (int argc, char* argv[])
 
     {
         juce::VST3PluginFormat vst3;
-        testHosted (vst3, plugins.getChildFile ("VST3/Simpleton.vst3"));
+        testHosted (vst3, plugins.getChildFile ("VST3/FreaxVolume.vst3"));
     }
    #if JUCE_MAC
     {
         juce::AudioUnitPluginFormat au;
-        testHosted (au, plugins.getChildFile ("Components/Simpleton.component"));
+        testHosted (au, plugins.getChildFile ("Components/FreaxVolume.component"));
     }
    #endif
 

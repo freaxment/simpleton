@@ -74,11 +74,11 @@ namespace Mapping
     }
 }
 
-class SimpletonAudioProcessor final : public juce::AudioProcessor
+class FreaxVolumeAudioProcessor final : public juce::AudioProcessor
 {
 public:
-    SimpletonAudioProcessor();
-    ~SimpletonAudioProcessor() override = default;
+    FreaxVolumeAudioProcessor();
+    ~FreaxVolumeAudioProcessor() override = default;
 
     void prepareToPlay (double sampleRate, int samplesPerBlock) override;
     void releaseResources() override {}
@@ -118,5 +118,5 @@ private:
     juce::SmoothedValue<float, juce::ValueSmoothingTypes::Linear> gainSmoother;
     juce::SmoothedValue<float, juce::ValueSmoothingTypes::Linear> sideSmoother;
 
-    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (SimpletonAudioProcessor)
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (FreaxVolumeAudioProcessor)
 };

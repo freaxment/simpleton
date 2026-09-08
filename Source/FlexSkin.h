@@ -3,11 +3,11 @@
 #include "PluginProcessor.h"
 #include "Skins.h"
 
-// "Simpleton Flex": dark panel, lime accent, big black knobs (the SignalFlex design).
+// "FreaxVolume Flex": dark panel, lime accent, big black knobs (the SignalFlex design).
 class FlexSkin final : public SkinView
 {
 public:
-    explicit FlexSkin (SimpletonAudioProcessor&);
+    explicit FlexSkin (FreaxVolumeAudioProcessor&);
 
     juce::Point<int> defaultSize() const override { return { 500, 360 }; }
     void configureConstrainer (juce::ComponentBoundsConstrainer&) const override;
@@ -35,7 +35,7 @@ private:
 
     void refreshLabels();
 
-    SimpletonAudioProcessor& processor;
+    FreaxVolumeAudioProcessor& processor;
 
     Knob gain, width;
     Button mute { "MUTE" }, mono { "MONO" };

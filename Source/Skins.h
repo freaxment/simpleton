@@ -4,7 +4,7 @@
 #include <juce_gui_basics/juce_gui_basics.h>
 
 //==============================================================================
-// Simpleton ships with two skins that drive the same four parameters.
+// FreaxVolume ships with two skins that drive the same four parameters.
 enum class SkinId { minimalist, flex };
 
 namespace Skins

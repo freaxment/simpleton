@@ -21,10 +21,10 @@ inline juce::Font makeFont (float height, bool bold = false, float kerning = 0.0
                .withExtraKerningFactor (kerning);
 }
 
-class SimpletonLookAndFeel final : public juce::LookAndFeel_V4
+class FreaxVolumeLookAndFeel final : public juce::LookAndFeel_V4
 {
 public:
-    SimpletonLookAndFeel()
+    FreaxVolumeLookAndFeel()
     {
         setColour (juce::Label::textColourId,                    Palette::ink);
         setColour (juce::Label::textWhenEditingColourId,         Palette::ink);

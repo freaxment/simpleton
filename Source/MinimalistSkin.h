@@ -4,11 +4,11 @@
 #include "LookAndFeel.h"
 #include "Skins.h"
 
-// "Simpleton Minimalist": warm paper, two-tone arcs, pill buttons, Freaxment logo.
+// "FreaxVolume Minimalist": warm paper, two-tone arcs, pill buttons, Freaxment logo.
 class MinimalistSkin final : public SkinView
 {
 public:
-    explicit MinimalistSkin (SimpletonAudioProcessor&);
+    explicit MinimalistSkin (FreaxVolumeAudioProcessor&);
 
     juce::Point<int> defaultSize() const override { return { baseWidth, baseHeight }; }
     void configureConstrainer (juce::ComponentBoundsConstrainer&) const override;
@@ -30,7 +30,7 @@ private:
     void refreshDimming();
     int scaled (float v) const { return juce::roundToInt (v * scale); }
 
-    SimpletonAudioProcessor& processor;
+    FreaxVolumeAudioProcessor& processor;
 
     juce::Slider volumeKnob, widthKnob;
     juce::Label  volumeCaption, widthCaption, volumeValue, widthValue;
