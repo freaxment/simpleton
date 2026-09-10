@@ -4,7 +4,7 @@ cmake_minimum_required(VERSION 3.22)
 set(CMAKE_OSX_ARCHITECTURES "arm64;x86_64" CACHE STRING "" FORCE)
 set(CMAKE_OSX_DEPLOYMENT_TARGET "10.13" CACHE STRING "" FORCE)
 
-project(FreaxVolume VERSION 1.2.0 LANGUAGES C CXX)
+project(FreaxVolume VERSION 2.0.0 LANGUAGES C CXX)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -15,8 +15,18 @@ endif()
 
 add_subdirectory(libs/JUCE)
 
-# Embedded assets (Freaxment logo)
-juce_add_binary_data(FreaxVolumeAssets SOURCES Resources/freaxment_logo.svg)
+# Embedded assets: Freaxment logo + TikTok Sans (OFL), same set as the other Freaxment plugins
+juce_add_binary_data(FreaxVolumeAssets
+    HEADER_NAME Assets.h
+    NAMESPACE Assets
+    SOURCES
+        Assets/freaxment_logo.svg
+        Assets/fonts/TikTokSans-Regular.ttf
+        Assets/fonts/TikTokSans-Medium.ttf
+        Assets/fonts/TikTokSans-ExpandedSemiBold.ttf
+        Assets/fonts/TikTokSans-ExpandedBold.ttf
+        Assets/fonts/TikTokSans-ExpandedBlack.ttf)
+set_target_properties(FreaxVolumeAssets PROPERTIES POSITION_INDEPENDENT_CODE ON)
 
 juce_add_plugin(FreaxVolume
     PRODUCT_NAME                "FreaxVolume"
@@ -33,13 +43,12 @@ juce_add_plugin(FreaxVolume
     NEEDS_MIDI_OUTPUT           FALSE
     IS_MIDI_EFFECT              FALSE
     EDITOR_WANTS_KEYBOARD_FOCUS FALSE
-    COPY_PLUGIN_AFTER_BUILD     TRUE)
+    COPY_PLUGIN_AFTER_BUILD     TRUE
+    HARDENED_RUNTIME_ENABLED    TRUE)
 
 target_sources(FreaxVolume PRIVATE
     Source/PluginProcessor.cpp
-    Source/PluginEditor.cpp
-    Source/MinimalistSkin.cpp
-    Source/FlexSkin.cpp)
+    Source/PluginEditor.cpp)
 
 target_include_directories(FreaxVolume PRIVATE Source)
 
@@ -65,9 +74,7 @@ if(FREAXVOLUME_BUILD_TESTS)
     target_sources(FreaxVolumeTest PRIVATE
         tests/FreaxVolumeTest.cpp
         Source/PluginProcessor.cpp
-        Source/PluginEditor.cpp
-        Source/MinimalistSkin.cpp
-        Source/FlexSkin.cpp)
+        Source/PluginEditor.cpp)
 
     target_include_directories(FreaxVolumeTest PRIVATE Source)
 

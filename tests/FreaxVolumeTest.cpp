@@ -8,7 +8,6 @@
 #include <juce_audio_utils/juce_audio_utils.h>
 #include "PluginProcessor.h"
 #include "PluginEditor.h"
-#include "Skins.h"
 
 #include <iostream>
 
@@ -170,10 +169,10 @@ namespace
         auto text = [] (juce::RangedAudioParameter* param, float plain) { return param->getText (param->convertTo0to1 (plain), 0); };
         auto value = [] (juce::RangedAudioParameter* param, const juce::String& s) { return param->convertFrom0to1 (param->getValueForText (s)); };
 
-        check (text (volume, 0.0f)   == "-inf dB",  "volume text at 0 %: "   + text (volume, 0.0f));
-        check (text (volume, 50.0f)  == "0.0 dB",   "volume text at 50 %: "  + text (volume, 50.0f));
-        check (text (volume, 100.0f) == "+10.0 dB", "volume text at 100 %: " + text (volume, 100.0f));
-        check (text (volume, 25.0f)  == "-12.0 dB", "volume text at 25 %: "  + text (volume, 25.0f));
+        check (text (volume, 0.0f)   == "-inf dB",   "volume text at 0 %: "   + text (volume, 0.0f));
+        check (text (volume, 50.0f)  == "0.00 dB",   "volume text at 50 %: "  + text (volume, 50.0f));
+        check (text (volume, 100.0f) == "+10.00 dB", "volume text at 100 %: " + text (volume, 100.0f));
+        check (text (volume, 25.0f)  == "-12.04 dB", "volume text at 25 %: "  + text (volume, 25.0f));
         check (text (width, 0.0f)    == "Mono",     "width text at 0 %: "    + text (width, 0.0f));
         check (text (width, 100.0f)  == "100 %",    "width text at 100 %: "  + text (width, 100.0f));
         check (text (width, 300.0f)  == "300 %",    "width text at 300 %: "  + text (width, 300.0f));
@@ -207,17 +206,9 @@ namespace
 
         FreaxVolumeAudioProcessor q;
         q.setStateInformation (blob.getData(), (int) blob.getSize());
-        check (Skins::load (q.getState()) == SkinId::minimalist, "default skin is Minimalist");
-
-        Skins::save (p.getState(), SkinId::flex);
-        p.getStateInformation (blob);
-        q.setStateInformation (blob.getData(), (int) blob.getSize());
-        check (Skins::load (q.getState()) == SkinId::flex, "skin choice survives save/restore");
-
         // A state saved by the plugin while it was still called "Simpleton" must load too.
         {
             juce::XmlElement legacy ("Simpleton");
-            legacy.setAttribute ("skin", "flex");
             auto* param = legacy.createNewChildElement ("PARAM");
             param->setAttribute ("id", "width");
             param->setAttribute ("value", 250.0);
@@ -228,8 +219,7 @@ namespace
             r.setStateInformation (legacyBlob.getData(), (int) legacyBlob.getSize());
             auto* widthParam = findParam (r, ParamID::width);
             const float restoredWidth = widthParam->convertFrom0to1 (widthParam->getValue());
-            check (near (restoredWidth, 250.0f) && Skins::load (r.getState()) == SkinId::flex,
-                   "legacy 'Simpleton' state loads (width 250 %, Flex skin)");
+            check (near (restoredWidth, 250.0f), "legacy 'Simpleton' state loads (width 250 %)");
         }
 
         auto plain = [] (juce::AudioProcessor& proc, const char* id)
@@ -316,7 +306,7 @@ namespace
                "hosted parameters visible: " + names.joinIntoString (", "));
 
         if (auto* volume = findHostedParam (*instance, "Volume"))
-            check (volume->getText (0.5f, 64) == "0.0 dB" && volume->getText (1.0f, 64) == "+10.0 dB" && volume->getText (0.0f, 64) == "-inf dB",
+            check (volume->getText (0.5f, 64) == "0.00 dB" && volume->getText (1.0f, 64) == "+10.00 dB" && volume->getText (0.0f, 64) == "-inf dB",
                    "hosted volume text: " + volume->getText (0.0f, 64) + " / " + volume->getText (0.5f, 64) + " / " + volume->getText (1.0f, 64));
 
         if (auto* width = findHostedParam (*instance, "Width"))
@@ -339,14 +329,12 @@ namespace
     }
 
     //==============================================================================
-    // Editor lifetime stress: open/close many times, switch skins through the real
-    // async path, and destroy editors while a switch is still pending.
+    // Editor lifetime stress: open/close many times, also with two instances alive at once.
     void stressEditorLifetime()
     {
         std::cout << "\n[editor lifetime]" << std::endl;
 
         auto pump = [] (int ms) { juce::MessageManager::getInstance()->runDispatchLoopUntil (ms); };
-        auto skinOf = [] (juce::AudioProcessorEditor& editor) { return dynamic_cast<SkinView*> (editor.getChildComponent (0)); };
 
         bool allGood = true;
         FreaxVolumeAudioProcessor p;
@@ -355,32 +343,19 @@ namespace
         for (int cycle = 0; cycle < 30; ++cycle)
         {
             std::unique_ptr<juce::AudioProcessorEditor> editor (p.createEditor());
-            auto* skin = skinOf (*editor);
-            allGood = allGood && skin != nullptr;
-            if (skin == nullptr) break;
-
-            const auto before = editor->getBounds();
-            skin->onSelectSkin (Skins::other (skin->currentSkin));   // same call the popup menu makes
-            pump (30);                                                // lets the deferred swap run
-
-            auto* swapped = skinOf (*editor);
-            allGood = allGood && swapped != nullptr && swapped != skin
-                      && editor->getBounds() != before
-                      && Skins::load (p.getState()) == swapped->currentSkin;
-
-            // Now request another swap and kill the editor before it runs.
-            swapped->onSelectSkin (Skins::other (swapped->currentSkin));
+            allGood = allGood && editor != nullptr && editor->getWidth() == 520 && editor->getHeight() == 190;
+            setPlain (p, ParamID::volume, (float) (cycle * 3 % 100));
+            setPlain (p, ParamID::mute, (float) (cycle % 2));
+            pump (10);
             editor.reset();
-            pump (30);
+            pump (10);
         }
 
-        check (allGood, "30 open/switch/close cycles, including destroy-while-switch-pending");
+        check (allGood, "30 open/close cycles with parameter changes while open");
 
-        // Editors of two instances alive at once, then torn down in either order.
         {
             FreaxVolumeAudioProcessor a, b;
             std::unique_ptr<juce::AudioProcessorEditor> ea (a.createEditor()), eb (b.createEditor());
-            skinOf (*ea)->onSelectSkin (SkinId::flex);
             pump (30);
             ea.reset();
             eb.reset();
@@ -419,38 +394,14 @@ namespace
         FreaxVolumeAudioProcessor b;
         setPlain (b, ParamID::volume, 82.0f);
         setPlain (b, ParamID::width, 240.0f);
-        snapshot (b, "freaxvolume_above_middle.png", 1.0f);
-
-        FreaxVolumeAudioProcessor d;
-        setPlain (d, ParamID::volume, 30.0f);
-        setPlain (d, ParamID::width, 40.0f);
-        setPlain (d, ParamID::mono, 1.0f);
-        snapshot (d, "freaxvolume_below_middle_mono.png", 1.0f);
+        setPlain (b, ParamID::mono, 1.0f);
+        snapshot (b, "freaxvolume_up_mono.png", 1.0f);
 
         FreaxVolumeAudioProcessor c;
         setPlain (c, ParamID::volume, 18.0f);
-        setPlain (c, ParamID::width, 300.0f);
+        setPlain (c, ParamID::width, 0.0f);
         setPlain (c, ParamID::mute, 1.0f);
-        snapshot (c, "freaxvolume_mute_wide_large.png", 1.5f);
-
-        // Flex skin
-        FreaxVolumeAudioProcessor e;
-        Skins::save (e.getState(), SkinId::flex);
-        snapshot (e, "flex_default.png", 1.0f);
-
-        FreaxVolumeAudioProcessor f;
-        Skins::save (f.getState(), SkinId::flex);
-        setPlain (f, ParamID::volume, 80.0f);
-        setPlain (f, ParamID::width, 50.0f);
-        setPlain (f, ParamID::mono, 1.0f);
-        snapshot (f, "flex_80_50_mono.png", 1.0f);
-
-        FreaxVolumeAudioProcessor h;
-        Skins::save (h.getState(), SkinId::flex);
-        setPlain (h, ParamID::volume, 0.0f);
-        setPlain (h, ParamID::width, 300.0f);
-        setPlain (h, ParamID::mute, 1.0f);
-        snapshot (h, "flex_min_max_mute_large.png", 1.4f);
+        snapshot (c, "freaxvolume_down_mute.png", 1.0f);
     }
 }
 

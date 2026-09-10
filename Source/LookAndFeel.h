@@ -1,192 +1,149 @@
 #pragma once
-
 #include <juce_gui_basics/juce_gui_basics.h>
+#include "Assets.h"
 
-namespace Palette
+// Same dark palette and type system as FreaxKlip / Freaxcalibur / FreaxEasyRec, acid-lime accent.
+namespace Theme
 {
-    const juce::Colour paper  { 0xfff4efe6 };   // warm off-white background
-    const juce::Colour knob   { 0xffe9e2d5 };   // knob body
-    const juce::Colour track  { 0xffd9d0c1 };   // idle part of the arc
-    const juce::Colour ink    { 0xff1f1b18 };   // text, pointer
-    const juce::Colour muted  { 0xff8c8378 };   // captions, secondary text
-    const juce::Colour greenLight  { 0xff2bcf3c };   // volume arc above the middle
-    const juce::Colour greenDark   { 0xff11b41e };   // volume arc below the middle, active Mute
-    const juce::Colour purpleLight { 0xff6f64cc };   // width arc above the middle
-    const juce::Colour purpleDark  { 0xff3f3590 };   // width arc below the middle, active Mono
+    const juce::Colour bg            { 0xff1b1b1d };
+    const juce::Colour panel         { 0xff222225 };
+    const juce::Colour panel2        { 0xff1e1e21 };
+    const juce::Colour text          { 0xfff2f2f4 };
+    const juce::Colour text2         { 0xffb6b6bc };
+    const juce::Colour text3         { 0xff7c7c84 };
+    const juce::Colour border        = juce::Colours::white.withAlpha (0.08f);
+    const juce::Colour borderStrong  = juce::Colours::white.withAlpha (0.18f);
+    const juce::Colour accent        { 0xffe5f55a };
+    const juce::Colour accentText    { 0xff1b1b1d };
+    const juce::Colour accentSoft    = accent.withAlpha (0.16f);
+    const juce::Colour knobTrack     = juce::Colours::white.withAlpha (0.10f);
+    const juce::Colour knobBody      { 0xff2a2a2e };
+
+    // TikTok Sans (OFL, embedded). Hierarchy: Expanded Black for the brand, Expanded Bold for the
+    // main controls, Expanded SemiBold for secondary controls, Regular / Medium for information text.
+    enum class Face { regular, medium, expandedSemiBold, expandedBold, expandedBlack };
+
+    inline juce::Typeface::Ptr typeface (Face face)
+    {
+        // Deliberately leaked: a static array with a destructor would release the CoreText typefaces while the
+        // host process is already exiting, which aborts Ableton Live on quit (std::terminate in ~CoreTextTypeface).
+        static juce::Typeface::Ptr* cache = new juce::Typeface::Ptr[5];
+        const int i = (int) face;
+        if (cache[i] == nullptr)
+        {
+            const char* data = nullptr; int size = 0;
+            switch (face)
+            {
+                case Face::regular:          data = Assets::TikTokSansRegular_ttf;          size = Assets::TikTokSansRegular_ttfSize; break;
+                case Face::medium:           data = Assets::TikTokSansMedium_ttf;           size = Assets::TikTokSansMedium_ttfSize; break;
+                case Face::expandedSemiBold: data = Assets::TikTokSansExpandedSemiBold_ttf; size = Assets::TikTokSansExpandedSemiBold_ttfSize; break;
+                case Face::expandedBold:     data = Assets::TikTokSansExpandedBold_ttf;     size = Assets::TikTokSansExpandedBold_ttfSize; break;
+                case Face::expandedBlack:    data = Assets::TikTokSansExpandedBlack_ttf;    size = Assets::TikTokSansExpandedBlack_ttfSize; break;
+            }
+            cache[i] = juce::Typeface::createSystemTypefaceFor (data, (size_t) size);
+        }
+        return cache[i];
+    }
+
+    inline juce::Font font (Face face, float size)
+    {
+        return juce::Font (juce::FontOptions (typeface (face)).withHeight (size));
+    }
+    inline juce::Font ui (float size, bool medium = false) { return font (medium ? Face::medium : Face::regular, size); }
+    inline juce::Font expanded (float size) { return font (Face::expandedSemiBold, size); }
+    inline juce::Font bold (float size) { return font (Face::expandedBold, size); }
+    inline juce::Font black (float size) { return font (Face::expandedBlack, size); }
 }
 
-inline juce::Font makeFont (float height, bool bold = false, float kerning = 0.0f)
-{
-    return juce::Font (juce::FontOptions (height, bold ? juce::Font::bold : juce::Font::plain))
-               .withExtraKerningFactor (kerning);
-}
-
-class FreaxVolumeLookAndFeel final : public juce::LookAndFeel_V4
+class FreaxVolumeLookAndFeel : public juce::LookAndFeel_V4
 {
 public:
     FreaxVolumeLookAndFeel()
     {
-        setColour (juce::Label::textColourId,                    Palette::ink);
-        setColour (juce::Label::textWhenEditingColourId,         Palette::ink);
-        setColour (juce::Label::backgroundWhenEditingColourId,   juce::Colours::transparentBlack);
-        setColour (juce::Label::outlineWhenEditingColourId,      juce::Colours::transparentBlack);
-
-        setColour (juce::TextEditor::textColourId,               Palette::ink);
-        setColour (juce::TextEditor::highlightedTextColourId,    Palette::ink);
-        setColour (juce::TextEditor::highlightColourId,          Palette::purpleDark.withAlpha (0.25f));
-        setColour (juce::TextEditor::backgroundColourId,         juce::Colours::transparentBlack);
-        setColour (juce::TextEditor::outlineColourId,            juce::Colours::transparentBlack);
-        setColour (juce::TextEditor::focusedOutlineColourId,     juce::Colours::transparentBlack);
-        setColour (juce::CaretComponent::caretColourId,          Palette::ink);
-
-        setColour (juce::Slider::rotarySliderOutlineColourId,    Palette::track);
-        setColour (juce::Slider::rotarySliderFillColourId,       Palette::greenLight);   // above the middle
-        setColour (juce::Slider::trackColourId,                  Palette::greenDark);    // below the middle
-        setColour (juce::Slider::thumbColourId,                  Palette::ink);
-
-        setColour (juce::TextButton::buttonColourId,             juce::Colours::transparentBlack);
-        setColour (juce::TextButton::buttonOnColourId,           Palette::ink);
-        setColour (juce::TextButton::textColourOffId,            Palette::ink);
-        setColour (juce::TextButton::textColourOnId,             Palette::paper);
+        setDefaultSansSerifTypeface (Theme::typeface (Theme::Face::regular));
+        setColour (juce::ResizableWindow::backgroundColourId, Theme::bg);
+        setColour (juce::Slider::textBoxTextColourId, Theme::text);
+        setColour (juce::Slider::textBoxBackgroundColourId, juce::Colours::transparentBlack);
+        setColour (juce::Slider::textBoxOutlineColourId, juce::Colours::transparentBlack);
+        setColour (juce::Slider::textBoxHighlightColourId, Theme::accentSoft);
+        setColour (juce::Label::textWhenEditingColourId, Theme::accent);
+        setColour (juce::TextEditor::highlightColourId, Theme::accentSoft);
+        setColour (juce::TextEditor::focusedOutlineColourId, juce::Colours::transparentBlack);
+        setColour (juce::CaretComponent::caretColourId, Theme::accent);
+        setColour (juce::TooltipWindow::backgroundColourId, Theme::text);
+        setColour (juce::TooltipWindow::textColourId, Theme::bg);
+        setColour (juce::TooltipWindow::outlineColourId, juce::Colours::transparentBlack);
     }
 
-    //==============================================================================
-    void drawRotarySlider (juce::Graphics& g, int x, int y, int width, int height,
-                           float sliderPos, float startAngle, float endAngle,
-                           juce::Slider& slider) override
+    // Horizontal slider: thin track, accent fill from the default position, round thumb.
+    void drawLinearSlider (juce::Graphics& g, int x, int y, int w, int h, float pos, float, float,
+                           juce::Slider::SliderStyle, juce::Slider& s) override
     {
-        const auto bounds  = juce::Rectangle<int> (x, y, width, height).toFloat();
-        const float radius = juce::jmin (bounds.getWidth(), bounds.getHeight()) * 0.5f;
-        const auto centre  = bounds.getCentre();
+        const float cy = (float) y + (float) h * 0.5f;
+        const float x0 = (float) x + 8.0f, x1 = (float) x + (float) w - 8.0f;
+        const float trackH = 4.0f;
+        g.setColour (Theme::knobTrack);
+        g.fillRoundedRectangle (x0, cy - trackH * 0.5f, x1 - x0, trackH, trackH * 0.5f);
 
-        const float lineW     = juce::jmax (2.0f, radius * 0.11f);
-        const float arcRadius = radius - lineW * 1.6f - 1.0f;      // leaves room for the neutral marker
-        const float midAngle  = (startAngle + endAngle) * 0.5f;            // 12 o'clock = neutral
-        const float angle     = startAngle + sliderPos * (endAngle - startAngle);
-
-        // Idle track
+        const float anchor = x0 + (float) s.valueToProportionOfLength (s.getDoubleClickReturnValue()) * (x1 - x0);
+        const float fx = juce::jlimit (x0, x1, pos);
+        if (std::abs (fx - anchor) > 0.5f)
         {
-            juce::Path track;
-            track.addCentredArc (centre.x, centre.y, arcRadius, arcRadius, 0.0f, startAngle, endAngle, true);
-            g.setColour (slider.findColour (juce::Slider::rotarySliderOutlineColourId));
-            g.strokePath (track, juce::PathStrokeType (lineW, juce::PathStrokeType::curved, juce::PathStrokeType::rounded));
+            g.setColour (s.isEnabled() ? Theme::accent : Theme::accent.withAlpha (0.4f));
+            g.fillRoundedRectangle (juce::jmin (anchor, fx), cy - trackH * 0.5f, std::abs (fx - anchor), trackH, trackH * 0.5f);
         }
 
-        // Value arc, grows from the neutral position in either direction:
-        // dark shade below the middle, light shade above it.
-        if (std::abs (angle - midAngle) > 0.001f)
-        {
-            juce::Path value;
-            value.addCentredArc (centre.x, centre.y, arcRadius, arcRadius, 0.0f,
-                                 juce::jmin (midAngle, angle), juce::jmax (midAngle, angle), true);
-            g.setColour (slider.findColour (angle < midAngle ? juce::Slider::trackColourId
-                                                             : juce::Slider::rotarySliderFillColourId));
-            g.strokePath (value, juce::PathStrokeType (lineW, juce::PathStrokeType::curved, juce::PathStrokeType::rounded));
-        }
-
-        // Neutral marker just outside the arc
-        {
-            const auto p1 = centre.getPointOnCircumference (arcRadius + lineW * 0.9f, midAngle);
-            const auto p2 = centre.getPointOnCircumference (arcRadius + lineW * 1.5f, midAngle);
-            g.setColour (Palette::muted.withAlpha (0.8f));
-            g.drawLine (juce::Line<float> (p1, p2), juce::jmax (1.0f, lineW * 0.25f));
-        }
-
-        // Knob body
-        const float bodyRadius = arcRadius - lineW * 1.45f;
-        const auto body = juce::Rectangle<float> (bodyRadius * 2.0f, bodyRadius * 2.0f).withCentre (centre);
-
-        g.setColour (Palette::ink.withAlpha (0.06f));
-        g.fillEllipse (body.translated (0.0f, lineW * 0.35f));
-        g.setColour (Palette::knob);
-        g.fillEllipse (body);
-        g.setColour (Palette::ink.withAlpha (0.10f));
-        g.drawEllipse (body, 1.0f);
-
-        // Pointer
-        {
-            juce::Path pointer;
-            pointer.startNewSubPath (centre.getPointOnCircumference (bodyRadius * 0.42f, angle));
-            pointer.lineTo          (centre.getPointOnCircumference (bodyRadius * 0.82f, angle));
-            g.setColour (slider.findColour (juce::Slider::thumbColourId));
-            g.strokePath (pointer, juce::PathStrokeType (juce::jmax (2.0f, lineW * 0.55f),
-                                                         juce::PathStrokeType::curved,
-                                                         juce::PathStrokeType::rounded));
-        }
+        const float r = 7.0f;
+        g.setColour (Theme::knobBody);
+        g.fillEllipse (fx - r, cy - r, r * 2.0f, r * 2.0f);
+        g.setColour (s.isMouseOverOrDragging() ? Theme::accent : Theme::text);
+        g.drawEllipse (fx - r, cy - r, r * 2.0f, r * 2.0f, 1.5f);
     }
 
-    //==============================================================================
-    juce::Font getTextButtonFont (juce::TextButton&, int buttonHeight) override
+    juce::Label* createSliderTextBox (juce::Slider& s) override
     {
-        return makeFont (juce::jmax (11.0f, (float) buttonHeight * 0.30f), true, 0.10f);
+        auto* l = LookAndFeel_V4::createSliderTextBox (s);
+        l->setFont (Theme::ui (12.0f, true));
+        l->setJustificationType (juce::Justification::centred);
+        l->setColour (juce::Label::textColourId, Theme::text);
+        l->setColour (juce::Label::outlineColourId, juce::Colours::transparentBlack);
+        l->setColour (juce::Label::outlineWhenEditingColourId, juce::Colours::transparentBlack);
+        return l;
     }
 
-    void drawButtonBackground (juce::Graphics& g, juce::Button& button, const juce::Colour&,
-                               bool isHighlighted, bool isDown) override
+    juce::Font getLabelFont (juce::Label&) override { return Theme::ui (12.0f, true); }
+
+    // Slider value box: rounded pill, no rectangular outline
+    void drawLabel (juce::Graphics& g, juce::Label& l) override
     {
-        const auto bounds  = button.getLocalBounds().toFloat().reduced (1.5f);
-        const float corner = bounds.getHeight() * 0.5f;
-        const bool on      = button.getToggleState();
-
-        if (on)
-        {
-            auto fill = button.findColour (juce::TextButton::buttonOnColourId);
-
-            if (isDown)
-                fill = fill.darker (0.15f);
-            else if (isHighlighted)
-                fill = fill.brighter (0.06f);
-
-            g.setColour (fill);
-            g.fillRoundedRectangle (bounds, corner);
-        }
-        else
-        {
-            if (isDown)
-            {
-                g.setColour (Palette::ink.withAlpha (0.08f));
-                g.fillRoundedRectangle (bounds, corner);
-            }
-
-            g.setColour (Palette::ink.withAlpha (isHighlighted ? 0.60f : 0.28f));
-            g.drawRoundedRectangle (bounds, corner, 1.5f);
-        }
-    }
-
-    void drawButtonText (juce::Graphics& g, juce::TextButton& button, bool, bool) override
-    {
-        const bool on = button.getToggleState();
-
-        g.setFont (getTextButtonFont (button, button.getHeight()));
-        g.setColour (button.findColour (on ? juce::TextButton::textColourOnId
-                                           : juce::TextButton::textColourOffId));
-        g.drawText (button.getButtonText().toUpperCase(), button.getLocalBounds(),
-                    juce::Justification::centred, false);
-    }
-
-    //==============================================================================
-    void fillTextEditorBackground (juce::Graphics& g, int width, int height, juce::TextEditor&) override
-    {
-        const auto r = juce::Rectangle<float> (0.0f, 0.0f, (float) width, (float) height).reduced (1.0f);
-        g.setColour (Palette::knob);
+        auto r = l.getLocalBounds().toFloat().reduced (0.5f);
+        g.setColour (juce::Colours::white.withAlpha (0.06f));
         g.fillRoundedRectangle (r, 6.0f);
-    }
-
-    void drawTextEditorOutline (juce::Graphics& g, int width, int height, juce::TextEditor&) override
-    {
-        const auto r = juce::Rectangle<float> (0.0f, 0.0f, (float) width, (float) height).reduced (1.0f);
-        g.setColour (Palette::ink.withAlpha (0.25f));
-        g.drawRoundedRectangle (r, 6.0f, 1.0f);
-    }
-
-    void drawCornerResizer (juce::Graphics& g, int w, int h, bool isMouseOver, bool isMouseDragging) override
-    {
-        g.setColour (Palette::muted.withAlpha ((isMouseOver || isMouseDragging) ? 0.9f : 0.35f));
-
-        for (int i = 1; i <= 2; ++i)
+        if (! l.isBeingEdited())
         {
-            const float o = (float) i * 4.0f;
-            g.drawLine ((float) w - o, (float) h - 2.0f, (float) w - 2.0f, (float) h - o, 1.2f);
+            g.setColour (l.findColour (juce::Label::textColourId).withMultipliedAlpha (l.isEnabled() ? 1.0f : 0.5f));
+            g.setFont (getLabelFont (l));
+            g.drawFittedText (l.getText(), l.getLocalBounds().reduced (4, 0), l.getJustificationType(), 1, 1.0f);
         }
+    }
+
+    void drawTooltip (juce::Graphics& g, const juce::String& text, int width, int height) override
+    {
+        g.setColour (Theme::text);
+        g.fillRoundedRectangle (juce::Rectangle<float> (0, 0, (float) width, (float) height), 8.0f);
+        g.setColour (Theme::bg);
+        g.setFont (Theme::ui (12.0f));
+        g.drawText (text, 0, 0, width, height, juce::Justification::centred);
+    }
+
+    juce::Rectangle<int> getTooltipBounds (const juce::String& tipText, juce::Point<int> screenPos,
+                                           juce::Rectangle<int> parentArea) override
+    {
+        auto f = Theme::ui (12.0f);
+        const int w = juce::GlyphArrangement::getStringWidthInt (f, tipText) + 20;
+        const int h = 24;
+        return juce::Rectangle<int> (screenPos.x > parentArea.getCentreX() ? screenPos.x - (w + 12) : screenPos.x + 24,
+                                     screenPos.y > parentArea.getCentreY() ? screenPos.y - (h + 6) : screenPos.y + 6, w, h)
+                .constrainedWithin (parentArea);
     }
 };

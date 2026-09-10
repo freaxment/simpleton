@@ -20,12 +20,12 @@ namespace
         if (value <= 0.0f)
             return "-inf dB";
 
-        float dB = std::round (Mapping::volumeToDecibels (value) * 10.0f) / 10.0f;
+        float dB = std::round (Mapping::volumeToDecibels (value) * 100.0f) / 100.0f;
 
-        if (std::abs (dB) < 0.05f)
+        if (std::abs (dB) < 0.005f)
             dB = 0.0f;
 
-        juce::String text (dB, 1);
+        juce::String text (dB, 2);
 
         if (dB > 0.0f)
             text = "+" + text;

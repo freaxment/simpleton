@@ -3,9 +3,9 @@
 A tiny channel utility for macOS in the spirit of Fruity Balance, Ableton Utility
 and Bitwig Tool. VST3 + AU, universal binary (Apple Silicon + Intel).
 
-Two skins drive the same four parameters: **Minimalist** (warm paper, two-tone arcs)
-and **Flex** (dark panel, lime accent). Right-click the plugin background and pick
-the skin from the menu; the choice is saved with the project.
+Looks like the rest of the Freaxment plugins (FreaxKlip, Freaxcalibur, FreaxEasyRec):
+dark panel, acid-lime accent, TikTok Sans, horizontal faders with editable values,
+lamp toggles in the header next to the Freaxment logo.
 
 ```
 ┌──────────────────────────────┐
@@ -31,9 +31,8 @@ the skin from the menu; the choice is saved with the project.
 * Width is the side gain in percent: L = M + g·S, R = M − g·S with g = width / 100.
   The knob travel is non-linear (g = 2x² + x for knob position x) so 100 % sits in the middle.
 * Every change is smoothed over 20 ms, so automation and button presses never click.
-* Double-click a knob to return to neutral. Double-click a value readout to type a
-  value (`-6`, `+3 dB`, `80 %`, `-inf`, `mono` all work).
-* The window is resizable; the Minimalist layout scales, Flex keeps its fixed geometry.
+* Double-click a fader to return to neutral. Click the value pill to type a value
+  (`-6`, `+3 dB`, `80 %`, `-inf`, `mono` all work).
 
 ## Build
 
@@ -98,12 +97,9 @@ Apple's own validator also passes: `auval -v aufx Smpl Frxm`.
 CMakeLists.txt        project (plugin + optional test host)
 build.sh              one-shot build & install
 Source/PluginProcessor.*   parameters, knob laws, DSP
-Source/PluginEditor.*      host window, swaps skins
-Source/Skins.h             skin id, persistence, skin base class with the right-click skin menu
-Source/MinimalistSkin.*    Minimalist skin (layout + drawing via LookAndFeel.h)
-Source/FlexSkin.*          Flex skin (self-painted knobs and buttons)
-Source/LookAndFeel.h       Minimalist palette, knob / button / text-editor drawing
-Resources/freaxment_logo.svg  logo, embedded as binary data
+Source/PluginEditor.*      Fader / Lamp widgets and the editor layout
+Source/LookAndFeel.h       Theme palette, embedded TikTok Sans, slider / label / tooltip drawing
+Assets/                    Freaxment logo and TikTok Sans fonts (OFL), embedded as binary data
 tests/FreaxVolumeTest.cpp    self-test host
 libs/JUCE                  JUCE 8.0.15 (cloned, not committed)
 ```
