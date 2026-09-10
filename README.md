@@ -111,6 +111,11 @@ libs/JUCE                  JUCE 8.0.15 (cloned, not committed)
 
 ## License
 
-JUCE 8 is used under its dual license. Distributing FreaxVolume binaries publicly
-either requires a JUCE license that matches your revenue tier or releasing this
-source under GPLv3, as JUCE's terms require.
+FreaxVolume is free software: the source code is released under the
+**GNU General Public License v3.0** (see [LICENSE](LICENSE)). The plugin is
+distributed free of charge. JUCE 8 is used under its GPLv3 option, which is
+why this project is GPL as well.
+
+Not covered by the GPL: the **Freaxment** name and logo remain the property of
+Freaxment and may not be used to brand derived works. The embedded TikTok Sans
+fonts are licensed under the SIL Open Font License 1.1 (`Assets/fonts/OFL.txt`).

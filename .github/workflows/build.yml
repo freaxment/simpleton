@@ -81,7 +81,7 @@ jobs:
           mkdir -p "$NAME/macOS" "$NAME/Windows"
           tar -xzf artifacts/macOS/macOS.tar.gz -C "$NAME/macOS"
           cp -R artifacts/Windows/FreaxVolume.vst3 "$NAME/Windows/"
-          cp packaging/INSTALL.txt "$NAME/"
+          cp packaging/INSTALL.txt LICENSE "$NAME/"
           ditto -c -k --keepParent "$NAME" "$NAME.zip"
           echo "NAME=$NAME" >> "$GITHUB_ENV"
           echo "Archive: $NAME.zip"; unzip -l "$NAME.zip" | tail -1
