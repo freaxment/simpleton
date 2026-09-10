@@ -8,6 +8,7 @@
 #include <juce_audio_utils/juce_audio_utils.h>
 #include "PluginProcessor.h"
 #include "PluginEditor.h"
+#include "Skins.h"
 
 #include <iostream>
 
@@ -206,6 +207,16 @@ namespace
 
         FreaxVolumeAudioProcessor q;
         q.setStateInformation (blob.getData(), (int) blob.getSize());
+        check (Skins::load (q.getState()) == SkinId::family, "default skin is the dark Freaxment design");
+
+        Skins::save (p.getState(), SkinId::minimalist);
+        p.getStateInformation (blob);
+        q.setStateInformation (blob.getData(), (int) blob.getSize());
+        check (Skins::load (q.getState()) == SkinId::minimalist, "skin choice survives save/restore");
+
+        q.getState().state.setProperty (Skins::property, "flex", nullptr);
+        check (Skins::load (q.getState()) == SkinId::family, "old 'flex' skin value falls back to the default skin");
+
         // A state saved by the plugin while it was still called "Simpleton" must load too.
         {
             juce::XmlElement legacy ("Simpleton");
@@ -335,6 +346,7 @@ namespace
         std::cout << "\n[editor lifetime]" << std::endl;
 
         auto pump = [] (int ms) { juce::MessageManager::getInstance()->runDispatchLoopUntil (ms); };
+        auto skinOf = [] (juce::AudioProcessorEditor& editor) { return dynamic_cast<SkinView*> (editor.getChildComponent (0)); };
 
         bool allGood = true;
         FreaxVolumeAudioProcessor p;
@@ -343,15 +355,30 @@ namespace
         for (int cycle = 0; cycle < 30; ++cycle)
         {
             std::unique_ptr<juce::AudioProcessorEditor> editor (p.createEditor());
-            allGood = allGood && editor != nullptr && editor->getWidth() == 520 && editor->getHeight() == 190;
+            auto* skin = skinOf (*editor);
+            allGood = allGood && skin != nullptr;
+            if (skin == nullptr) break;
+
             setPlain (p, ParamID::volume, (float) (cycle * 3 % 100));
             setPlain (p, ParamID::mute, (float) (cycle % 2));
-            pump (10);
+
+            const auto before = editor->getBounds();
+            skin->onSelectSkin (Skins::other (skin->currentSkin));   // same call the right-click menu makes
+            pump (30);                                                // lets the deferred swap run
+
+            auto* swapped = skinOf (*editor);
+            allGood = allGood && swapped != nullptr && swapped != skin
+                      && editor->getBounds() != before
+                      && Skins::load (p.getState()) == swapped->currentSkin;
+
+            // Request another swap and destroy the editor before it runs.
+            swapped->onSelectSkin (Skins::other (swapped->currentSkin));
             editor.reset();
-            pump (10);
+            pump (30);
         }
 
-        check (allGood, "30 open/close cycles with parameter changes while open");
+        check (allGood, "30 open/switch/close cycles, including destroy-while-switch-pending");
+        Skins::save (p.getState(), SkinId::family);
 
         {
             FreaxVolumeAudioProcessor a, b;
@@ -402,6 +429,18 @@ namespace
         setPlain (c, ParamID::width, 0.0f);
         setPlain (c, ParamID::mute, 1.0f);
         snapshot (c, "freaxvolume_down_mute.png", 1.0f);
+
+        // Minimalist skin
+        FreaxVolumeAudioProcessor e;
+        Skins::save (e.getState(), SkinId::minimalist);
+        snapshot (e, "minimalist_default.png", 1.0f);
+
+        FreaxVolumeAudioProcessor f;
+        Skins::save (f.getState(), SkinId::minimalist);
+        setPlain (f, ParamID::volume, 82.0f);
+        setPlain (f, ParamID::width, 240.0f);
+        setPlain (f, ParamID::mono, 1.0f);
+        snapshot (f, "minimalist_up_mono.png", 1.0f);
     }
 }
 

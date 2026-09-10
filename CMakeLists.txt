@@ -4,7 +4,7 @@ cmake_minimum_required(VERSION 3.22)
 set(CMAKE_OSX_ARCHITECTURES "arm64;x86_64" CACHE STRING "" FORCE)
 set(CMAKE_OSX_DEPLOYMENT_TARGET "10.13" CACHE STRING "" FORCE)
 
-project(FreaxVolume VERSION 2.0.0 LANGUAGES C CXX)
+project(FreaxVolume VERSION 2.1.0 LANGUAGES C CXX)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -48,7 +48,9 @@ juce_add_plugin(FreaxVolume
 
 target_sources(FreaxVolume PRIVATE
     Source/PluginProcessor.cpp
-    Source/PluginEditor.cpp)
+    Source/PluginEditor.cpp
+    Source/FamilySkin.cpp
+    Source/MinimalistSkin.cpp)
 
 target_include_directories(FreaxVolume PRIVATE Source)
 
@@ -74,7 +76,9 @@ if(FREAXVOLUME_BUILD_TESTS)
     target_sources(FreaxVolumeTest PRIVATE
         tests/FreaxVolumeTest.cpp
         Source/PluginProcessor.cpp
-        Source/PluginEditor.cpp)
+        Source/PluginEditor.cpp
+        Source/FamilySkin.cpp
+        Source/MinimalistSkin.cpp)
 
     target_include_directories(FreaxVolumeTest PRIVATE Source)
 
