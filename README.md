@@ -1,7 +1,16 @@
 # FreaxVolume — by Freaxment
 
-A tiny channel utility for macOS in the spirit of Fruity Balance, Ableton Utility
-and Bitwig Tool. VST3 + AU, universal binary (Apple Silicon + Intel).
+A tiny channel utility in the spirit of Fruity Balance, Ableton Utility and Bitwig Tool.
+Free, open source (GPLv3).
+
+| Platform | Formats | Build |
+|----------|---------|-------|
+| macOS 10.13+ | VST3, AU | universal binary (Apple Silicon + Intel) |
+| Windows 10/11 | VST3 | x64 |
+
+**Download:** the latest `FreaxVolume-by-Freaxment-v<version>-macOS-Windows.zip` from the
+[Releases](https://github.com/freaxment/FreaxVolume/releases) page. One archive contains
+both platforms plus `INSTALL.txt` with install steps in Russian and English.
 
 Looks like the rest of the Freaxment plugins: dark panel, acid-lime accent, TikTok Sans.
 Two layouts drive the same four parameters. **Faders** (default): horizontal faders with
@@ -10,18 +19,19 @@ knobs with value pills and MUTE / MONO buttons along the bottom. Right-click the
 background to pick a layout; the choice is saved with the project.
 
 ```
-┌──────────────────────────────┐
-│    freaxvolume  by Freaxment   │
-│   VOLUME            WIDTH    │
-│    (o)               (o)     │
-│   0.0 dB           100 %     │
-│  [ MUTE ]          [ MONO ]  │
-└──────────────────────────────┘
+┌────────────────────────────────────────────────┐
+│ FreaxVolume   ○ MUTE  ○ MONO         FREAXMENT │
+│ CHANNEL UTILITY                                │
+│ VOLUME                                         │
+│ ────────────────●──────────────────  [0.00 dB] │
+│ WIDTH                          Original stereo │
+│ ────────────────●──────────────────  [ 100 % ] │
+└────────────────────────────────────────────────┘
 ```
 
 ## Controls
 
-| Control | knob left      | knob middle (neutral) | knob right       |
+| Control | left           | middle (neutral)      | right            |
 |---------|----------------|-----------------------|------------------|
 | Volume  | 0 % = silence  | 50 % = 0 dB           | 100 % = +10 dB   |
 | Width   | 0 % = mono     | 100 % = untouched     | 300 % = side ×3  |
