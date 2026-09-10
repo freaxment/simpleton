@@ -21,7 +21,7 @@ Mute / Mono. Двойной клик по фейдеру возвращает с
 Правый клик по фону плагина: выбор раскладки Faders (по умолчанию) / Knobs.
 
 === ЛИЦЕНЗИЯ ===
-FreaxVolume бесплатен. Исходный код открыт под GNU GPL v3: https://github.com/freaxment/simpleton
+FreaxVolume бесплатен. Исходный код открыт под GNU GPL v3: https://github.com/freaxment/FreaxVolume
 Название и логотип Freaxment остаются собственностью автора. Шрифты TikTok Sans — SIL Open Font License 1.1.
 
 === INSTALL (EN) ===
@@ -31,4 +31,4 @@ macOS: copy macOS/VST3/FreaxVolume.vst3 to ~/Library/Audio/Plug-Ins/VST3/ and ma
 Windows: copy the whole Windows/FreaxVolume.vst3 folder to C:\Program Files\Common Files\VST3\
 Then rescan plugins in your DAW. Double-click a fader to reset it, click the value to type one.
 Right-click the plugin background to switch between the Faders (default) and Knobs layouts.
-FreaxVolume is free software (GNU GPL v3): https://github.com/freaxment/simpleton
+FreaxVolume is free software (GNU GPL v3): https://github.com/freaxment/FreaxVolume
