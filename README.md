@@ -3,11 +3,11 @@
 A tiny channel utility for macOS in the spirit of Fruity Balance, Ableton Utility
 and Bitwig Tool. VST3 + AU, universal binary (Apple Silicon + Intel).
 
-Two skins drive the same four parameters. **Dark** (default) looks like the rest of
-the Freaxment plugins: dark panel, acid-lime accent, TikTok Sans, horizontal faders
-with editable values, lamp toggles in the header next to the Freaxment logo.
-**Minimalist** is the warm-paper design with two-tone knob arcs. Right-click the
-plugin background to pick a skin; the choice is saved with the project.
+Looks like the rest of the Freaxment plugins: dark panel, acid-lime accent, TikTok Sans.
+Two layouts drive the same four parameters. **Faders** (default): horizontal faders with
+editable values, lamp toggles in the header next to the Freaxment logo. **Knobs**: two big
+knobs with value pills and MUTE / MONO buttons along the bottom. Right-click the plugin
+background to pick a layout; the choice is saved with the project.
 
 ```
 ┌──────────────────────────────┐
@@ -101,9 +101,9 @@ build.sh              one-shot build & install
 Source/PluginProcessor.*   parameters, knob laws, DSP
 Source/PluginEditor.*      host window, swaps skins
 Source/Skins.h             skin id, persistence, skin base class with the right-click skin menu
-Source/FamilySkin.*        Dark skin: Fader / Lamp widgets and layout (LookAndFeel.h)
-Source/MinimalistSkin.*    Minimalist skin (MinimalistLookAndFeel.h)
-Source/LookAndFeel.h       Theme palette, embedded TikTok Sans, slider / label / tooltip drawing
+Source/FamilySkin.*        Faders layout: Fader / Lamp widgets
+Source/KnobSkin.*          Knobs layout: rotary knobs + pill buttons
+Source/LookAndFeel.h       Theme palette, embedded TikTok Sans, knob / slider / button / label drawing
 Assets/                    Freaxment logo and TikTok Sans fonts (OFL), embedded as binary data
 tests/FreaxVolumeTest.cpp    self-test host
 libs/JUCE                  JUCE 8.0.15 (cloned, not committed)

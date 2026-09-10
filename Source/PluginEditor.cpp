@@ -1,6 +1,6 @@
 #include "PluginEditor.h"
 #include "FamilySkin.h"
-#include "MinimalistSkin.h"
+#include "KnobSkin.h"
 
 FreaxVolumeAudioProcessorEditor::FreaxVolumeAudioProcessorEditor (FreaxVolumeAudioProcessor& p)
     : AudioProcessorEditor (&p), freaxVolumeProcessor (p)
@@ -18,8 +18,8 @@ void FreaxVolumeAudioProcessorEditor::showSkin (SkinId id)
 {
     skin.reset();
 
-    if (id == SkinId::minimalist)
-        skin = std::make_unique<MinimalistSkin> (freaxVolumeProcessor);
+    if (id == SkinId::knobs)
+        skin = std::make_unique<KnobSkin> (freaxVolumeProcessor);
     else
         skin = std::make_unique<FamilySkin> (freaxVolumeProcessor);
 
@@ -44,11 +44,8 @@ void FreaxVolumeAudioProcessorEditor::showSkin (SkinId id)
 
     addAndMakeVisible (*skin);
 
-    // Only the Minimalist skin scales; the dark skin keeps the fixed size of the other Freaxment plugins.
-    setResizable (true, id == SkinId::minimalist);
-
-    if (auto* constrainer = getConstrainer())
-        skin->configureConstrainer (*constrainer);
+    // Both skins are fixed-size, like the other Freaxment plugins.
+    setResizable (false, false);
 
     const auto size = skin->defaultSize();
 

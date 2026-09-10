@@ -209,13 +209,13 @@ namespace
         q.setStateInformation (blob.getData(), (int) blob.getSize());
         check (Skins::load (q.getState()) == SkinId::family, "default skin is the dark Freaxment design");
 
-        Skins::save (p.getState(), SkinId::minimalist);
+        Skins::save (p.getState(), SkinId::knobs);
         p.getStateInformation (blob);
         q.setStateInformation (blob.getData(), (int) blob.getSize());
-        check (Skins::load (q.getState()) == SkinId::minimalist, "skin choice survives save/restore");
+        check (Skins::load (q.getState()) == SkinId::knobs, "skin choice survives save/restore");
 
-        q.getState().state.setProperty (Skins::property, "flex", nullptr);
-        check (Skins::load (q.getState()) == SkinId::family, "old 'flex' skin value falls back to the default skin");
+        q.getState().state.setProperty (Skins::property, "minimalist", nullptr);
+        check (Skins::load (q.getState()) == SkinId::family, "old skin values fall back to the default skin");
 
         // A state saved by the plugin while it was still called "Simpleton" must load too.
         {
@@ -430,17 +430,24 @@ namespace
         setPlain (c, ParamID::mute, 1.0f);
         snapshot (c, "freaxvolume_down_mute.png", 1.0f);
 
-        // Minimalist skin
+        // Knobs skin
         FreaxVolumeAudioProcessor e;
-        Skins::save (e.getState(), SkinId::minimalist);
-        snapshot (e, "minimalist_default.png", 1.0f);
+        Skins::save (e.getState(), SkinId::knobs);
+        snapshot (e, "knobs_default.png", 1.0f);
 
         FreaxVolumeAudioProcessor f;
-        Skins::save (f.getState(), SkinId::minimalist);
+        Skins::save (f.getState(), SkinId::knobs);
         setPlain (f, ParamID::volume, 82.0f);
         setPlain (f, ParamID::width, 240.0f);
         setPlain (f, ParamID::mono, 1.0f);
-        snapshot (f, "minimalist_up_mono.png", 1.0f);
+        snapshot (f, "knobs_up_mono.png", 1.0f);
+
+        FreaxVolumeAudioProcessor h;
+        Skins::save (h.getState(), SkinId::knobs);
+        setPlain (h, ParamID::volume, 18.0f);
+        setPlain (h, ParamID::width, 0.0f);
+        setPlain (h, ParamID::mute, 1.0f);
+        snapshot (h, "knobs_down_mute.png", 1.0f);
     }
 }
 

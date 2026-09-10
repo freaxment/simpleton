@@ -44,11 +44,6 @@ public:
     ~FamilySkin() override;
 
     juce::Point<int> defaultSize() const override { return { 520, 190 }; }
-    void configureConstrainer (juce::ComponentBoundsConstrainer& c) const override
-    {
-        c.setFixedAspectRatio (0.0);
-        c.setSizeLimits (520, 190, 520, 190);   // fixed size, like the other Freaxment plugins
-    }
 
     void paint (juce::Graphics&) override;
     void resized() override;

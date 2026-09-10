@@ -75,6 +75,69 @@ public:
         setColour (juce::TooltipWindow::outlineColourId, juce::Colours::transparentBlack);
     }
 
+    // Rotary knob: dark body, faint track ring, accent arc that grows from the default position, white pointer.
+    void drawRotarySlider (juce::Graphics& g, int x, int y, int w, int h, float pos,
+                           float startAngle, float endAngle, juce::Slider& s) override
+    {
+        auto area = juce::Rectangle<float> ((float) x, (float) y, (float) w, (float) h).reduced (4.0f);
+        const float size = juce::jmin (area.getWidth(), area.getHeight());
+        area = area.withSizeKeepingCentre (size, size);
+        const auto centre = area.getCentre();
+        const float radius = size * 0.5f;
+        const float angle = startAngle + pos * (endAngle - startAngle);
+        const float arcR = radius - 3.0f;
+        const float stroke = 3.0f;
+
+        juce::Path track;
+        track.addCentredArc (centre.x, centre.y, arcR, arcR, 0.0f, startAngle, endAngle, true);
+        g.setColour (Theme::knobTrack);
+        g.strokePath (track, juce::PathStrokeType (stroke, juce::PathStrokeType::curved, juce::PathStrokeType::rounded));
+
+        const double defPos = s.valueToProportionOfLength (s.getDoubleClickReturnValue());
+        const float anchor = startAngle + (float) defPos * (endAngle - startAngle);
+        if (std::abs (angle - anchor) > 0.001f)
+        {
+            juce::Path arc;
+            arc.addCentredArc (centre.x, centre.y, arcR, arcR, 0.0f, juce::jmin (anchor, angle), juce::jmax (anchor, angle), true);
+            g.setColour (s.isEnabled() ? Theme::accent : Theme::accent.withAlpha (0.4f));
+            g.strokePath (arc, juce::PathStrokeType (stroke, juce::PathStrokeType::curved, juce::PathStrokeType::rounded));
+        }
+
+        const float bodyR = radius - 9.0f;
+        g.setColour (Theme::knobBody);
+        g.fillEllipse (centre.x - bodyR, centre.y - bodyR, bodyR * 2.0f, bodyR * 2.0f);
+        g.setColour (s.isMouseOverOrDragging() ? Theme::borderStrong : Theme::border);
+        g.drawEllipse (centre.x - bodyR, centre.y - bodyR, bodyR * 2.0f, bodyR * 2.0f, 1.0f);
+
+        const auto tip = centre.getPointOnCircumference (bodyR - 4.0f, angle);
+        const auto tail = centre.getPointOnCircumference (bodyR * 0.45f, angle);
+        g.setColour (Theme::text);
+        g.drawLine ({ tail, tip }, 2.5f);
+    }
+
+    // Buttons: 7 px radius pills; toggled = accent with dark text (FreaxEasyRec style).
+    void drawButtonBackground (juce::Graphics& g, juce::Button& b, const juce::Colour&,
+                               bool isHighlighted, bool isDown) override
+    {
+        auto r = b.getLocalBounds().toFloat();
+        if (isDown) r.translate (0.0f, 0.5f);
+        const bool on = b.getToggleState();
+        juce::Colour fill = on ? Theme::accent
+                               : (isHighlighted ? juce::Colours::white.withAlpha (0.14f) : juce::Colours::white.withAlpha (0.08f));
+        if (on && isHighlighted) fill = fill.brighter (0.06f);
+        g.setColour (fill);
+        g.fillRoundedRectangle (r, 7.0f);
+    }
+
+    void drawButtonText (juce::Graphics& g, juce::TextButton& b, bool, bool) override
+    {
+        g.setColour (b.getToggleState() ? Theme::accentText : Theme::text);
+        g.setFont (getTextButtonFont (b, b.getHeight()));
+        g.drawFittedText (b.getButtonText(), b.getLocalBounds().reduced (6, 0), juce::Justification::centred, 1);
+    }
+
+    juce::Font getTextButtonFont (juce::TextButton&, int height) override { return Theme::expanded (height < 26 ? 11.0f : 12.0f); }
+
     // Horizontal slider: thin track, accent fill from the default position, round thumb.
     void drawLinearSlider (juce::Graphics& g, int x, int y, int w, int h, float pos, float, float,
                            juce::Slider::SliderStyle, juce::Slider& s) override
